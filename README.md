@@ -1,5 +1,9 @@
 # Getting started
 
-This is my little shell script that I wrote to dump the annotations from iBooks.  (I think) The only think that needs to be changed in the Book title variable in the shell script.  
+This is my little shell script that I wrote to dump the annotations from iBooks.  The only thing that needs to be changed in the script is the BOOK_TITLE variable in the shell script near the top of the script.  
 
-This little script just dumps the ibooks of a target book (using the title) into a semi-colon delimated file in $HOME/Downloads/output.csv.  You can then import this file into Anki since Anki will import csv files. 
+```shell
+BOOK_TITLE="The Books Title" # change this to your target book title
+```
+
+This little script just dumps the ibooks annotations using the title of the book into a semicolon delimated file in ~/Downloads/output.csv.  You can then import this file into Anki since Anki will import csv files.
