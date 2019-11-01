@@ -83,6 +83,7 @@ get_notes_info() {
 		fi
 
 		## DATES
+		chapterLine=`echo $line | cut -f 4 -d '|'`
 		chapter=`echo $line | cut -f 4 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 + 0000 + {} seconds'"`
 		if [ -z ${chapter+x} ]; then
 			# echo "chapter is unset";
@@ -107,8 +108,8 @@ get_notes_info() {
 		else
 			modified=`echo $line | cut -f 6 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 + 0000 + {} seconds'"`
 		fi
-
-		echo "$SelectedText|Chapter: $Chapter|Created: $Created|Modified: $Modified;back" >> "$CSV_FILE"
+		echo "$selectedText|Chapter: $chapter|Created: $created|Modified: $modified;back"
+		# echo "$selectedText|Chapter: $chapter|Created: $created|Modified: $modified;back" >> "$CSV_FILE"
 	done
 
 	echo "Done! Output file is @ $CSV_FILE"
