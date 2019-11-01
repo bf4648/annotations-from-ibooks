@@ -83,29 +83,29 @@ get_notes_info() {
 		fi
 
 		## DATES
-		chapter=`echo $line | cut -f 5 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 + 0000 + {} seconds'"`
+		chapter=`echo $line | cut -f 4 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 + 0000 + {} seconds'"`
 		if [ -z ${chapter+x} ]; then
 			# echo "chapter is unset";
 			chapter="''"
 		else
-			chapter=`echo $line | cut -f 5 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 +0000 + {} seconds'"`
+			chapter=`echo $line | cut -f 4 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 +0000 + {} seconds'"`
 		fi
 
-		created=`echo $line | cut -f 6 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 + 0000 + {} seconds'"`
+		created=`echo $line | cut -f 5 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 + 0000 + {} seconds'"`
 		if [ -z ${created+x} ]; then
 			# echo "created is unset";
 			created="''"
 		else
 			# echo "created is set to '$created'";
-			created=`echo $line | cut -f 6 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 + 0000 + {} seconds'"`
+			created=`echo $line | cut -f 5 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 + 0000 + {} seconds'"`
 		fi
 
-		modified=`echo $line | cut -f 7 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 + 0000 + {} seconds'"`
+		modified=`echo $line | cut -f 6 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 + 0000 + {} seconds'"`
 		if [ -z ${modified+x} ]; then
 			# echo "modified is unset";
 			modified="''"
 		else
-			modified=`echo $line | cut -f 7 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 + 0000 + {} seconds'"`
+			modified=`echo $line | cut -f 6 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 + 0000 + {} seconds'"`
 		fi
 
 		echo "$SelectedText|Chapter: $Chapter|Created: $Created|Modified: $Modified;back" >> "$CSV_FILE"
