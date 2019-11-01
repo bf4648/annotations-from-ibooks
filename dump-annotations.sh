@@ -5,9 +5,9 @@
 # https://unix.stackexchange.com/questions/107750/how-to-parse-iso8601-dates-with-linux-date-command
 # https://www.techonthenet.com/sqlite/functions/datetime.php
 # https://askubuntu.com/questions/408775/add-seconds-to-a-given-date-in-bash
-set -euo pipefail
 
-BOOK_TITLE="Psychology A Complete Introduction"
+#exit on error
+set -e
 
 # bins
 SQLITE3=/usr/bin/sqlite3
@@ -20,41 +20,104 @@ DOCS=~/Library/Containers/com.apple.iBooksX/Data/Documents
 BOOKS_DATABASE_DIRECTORY="$DOCS"/BKLibrary
 NOTES_DATABASE_DIRECTORY="$DOCS"/AEAnnotation
 
-# files
-BOOKS_DATABASE_FILE=`find "$BOOKS_DATABASE_DIRECTORY" -iname "*.sqlite"`
-NOTES_DATABASE_FILE=`find "$NOTES_DATABASE_DIRECTORY" -iname "*.sqlite"`
-
 # queries
-BOOKS_QUERY="SELECT ZASSETID, ZTITLE AS Title, ZAUTHOR AS Author FROM ZBKLIBRARYASSET WHERE ZTITLE IS NOT NULL"
-while read -r line; do
-	# =~ is a regex expression
-	if [[ $line =~ "$BOOK_TITLE" ]]; then
-		# echo "$line"
-		ZASSETID=`echo $line | cut -f 1 -d '|'`
-		Title=`echo $line | cut -f 2 -d '|'`
-		Author=`echo $line | cut -f 3 -d '|'`
-	fi
-done < <("$SQLITE3" "$BOOKS_DATABASE_FILE" "$BOOKS_QUERY")
+get_ID() {
+	local book_title="$1"
+	local books_database_file=`find "$BOOKS_DATABASE_DIRECTORY" -iname "*.sqlite"`
+	local books_query="SELECT ZASSETID, ZTITLE AS Title, ZAUTHOR AS Author FROM ZBKLIBRARYASSET WHERE ZTITLE IS NOT NULL"
+	"SQLITE3" "$books_database_file" "$books_query" | while read line; do
+		if [[ $line =~ "$book_title" ]]; then
+			get_ID_result=`echo $line | cut -f 1 -d '|'`
+			echo $get_ID_result
+			# TITLE=`echo $line | cut -f 2 -d '|'`
+			# AUTHOR=`echo $line | cut -f 3 -d '|'`
+		fi
+	done
+}
 
-# notes
-NOTES_QUERY="SELECT ZANNOTATIONREPRESENTATIVETEXT as BroaderText, ZANNOTATIONSELECTEDTEXT as SelectedText, ZANNOTATIONNOTE as Note, ZFUTUREPROOFING5 as Chapter, ZANNOTATIONCREATIONDATE as Created, ZANNOTATIONMODIFICATIONDATE as Modified FROM ZAEANNOTATION WHERE ZANNOTATIONSELECTEDTEXT IS NOT NULL AND ZANNOTATIONASSETID = '"$ZASSETID"' ORDER BY ZANNOTATIONASSETID ASC,Created ASC"
+rm_csv_file() {
+	rm -vfr "$CSV_FILE"
+}
 
-# The iBooks DB stores the ZANNOTATIONCREATIONDATE and ZANNOTATIONMODIFICATIONDATE values in ISO-8601 standard as seconds from the date of 2000-01-01 00:00:00 +0000.
-# For example,
-# if I had a value of 588916720.882715 in the ZANNOTATIONCREATIONDATE field I could do the following to get the actual date that
-# this value represents in human readable form:
-# /usr/local/bin/gdate '+%m/%d/%Y %I:%M %p' --date="2000-01-01 00:00:00 +0000 + 588916720.882715 seconds"
-# ; is the delimiter
-rm -rfv "$CSV_FILE"
-while read -r line; do
-	# =~ is a regex expression
-	BroaderText=`echo $line | cut -f 1 -d '|'`
-	SelectedText=`echo $line | cut -f 2 -d '|'`
-	Note=`echo $line | cut -f 3 -d '|'`
-	Chapter=`echo $line | cut -f 4 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 +0000 + {} seconds'"`
-	Created=`echo $line | cut -f 5 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 +0000 + {} seconds'"`
-	Modified=`echo $line | cut -f 6 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 +0000 + {} seconds'"`
-	echo "$SelectedText|Chapter: $Chapter|Created: $Created|Modified: $Modified;back" >> "$CSV_FILE"
-done < <("$SQLITE3" "$NOTES_DATABASE_FILE" "$NOTES_QUERY")
+get_notes_info() {
+	# notes
+	local zassetid="$1"
+	local notes_database_file=`find "$NOTES_DATABASE_DIRECTORY" -iname "*.sqlite"`
+	local notes_query="SELECT ZANNOTATIONREPRESENTATIVETEXT as BroaderText, ZANNOTATIONSELECTEDTEXT as SelectedText, ZANNOTATIONNOTE as Note, ZFUTUREPROOFING5 as Chapter, ZANNOTATIONCREATIONDATE as Created, ZANNOTATIONMODIFICATIONDATE as Modified FROM ZAEANNOTATION WHERE ZANNOTATIONSELECTEDTEXT IS NOT NULL AND ZANNOTATIONASSETID = '"$zassetid"' ORDER BY ZANNOTATIONASSETID ASC,Created ASC"
+	# The iBooks DB stores the ZANNOTATIONCREATIONDATE and ZANNOTATIONMODIFICATIONDATE values in ISO-8601 standard as seconds from the date of 2000-01-01 00:00:00 +0000.
+	# For example,
+	# if I had a value of 588916720.882715 in the ZANNOTATIONCREATIONDATE field I could do the following to get the actual date that
+	# this value represents in human readable form:
+	# /usr/local/bin/gdate '+%m/%d/%Y %I:%M %p' --date="2000-01-01 00:00:00 +0000 + 588916720.882715 seconds"
+	# ; is the delimiter
+	"SQLITE3" "$notes_database_file" "$notes_query" | while read line; do
 
-echo "Done! Output file is @ $CSV_FILE"
+		# broaderText
+		broaderText=`echo $line | cut -f 1 -d '|'`
+		if [ -z ${broaderText+x} ]; then
+			# echo "broaderText is unset";
+			broaderText="''"
+		else
+			# echo "broaderText is set to '$broaderText'";
+			broaderText=`echo $line | cut -f 1 -d '|'`
+		fi
+
+		# selectedText
+		selectedText=`echo $line | cut -f 2 -d '|'`
+		if [ -z ${selectedText+x} ]; then
+			# echo "selectedText is unset";
+			selectedText="''"
+		else
+			# echo "selectedText is set to '$selectedText'";
+			selectedText=`echo $line | cut -f 2 -d '|'`
+		fi
+
+		# note
+		note=`echo $line | cut -f 3 -d '|'`
+		if [ -z ${note+x} ]; then
+			# echo "note is unset";
+			note="''"
+		else
+			# echo "note is set to '$note'";
+			note=`echo $line | cut -f 3 -d '|'`
+		fi
+
+		## DATES
+		chapter=`echo $line | cut -f 5 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 + 0000 + {} seconds'"`
+		if [ -z ${chapter+x} ]; then
+			# echo "chapter is unset";
+			chapter="''"
+		else
+			chapter=`echo $line | cut -f 5 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 +0000 + {} seconds'"`
+		fi
+
+		created=`echo $line | cut -f 6 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 + 0000 + {} seconds'"`
+		if [ -z ${created+x} ]; then
+			# echo "created is unset";
+			created="''"
+		else
+			# echo "created is set to '$created'";
+			created=`echo $line | cut -f 6 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 + 0000 + {} seconds'"`
+		fi
+
+		modified=`echo $line | cut -f 7 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 + 0000 + {} seconds'"`
+		if [ -z ${modified+x} ]; then
+			# echo "modified is unset";
+			modified="''"
+		else
+			modified=`echo $line | cut -f 7 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 + 0000 + {} seconds'"`
+		fi
+
+		echo "$SelectedText|Chapter: $Chapter|Created: $Created|Modified: $Modified;back" >> "$CSV_FILE"
+	done
+
+	echo "Done! Output file is @ $CSV_FILE"
+}
+
+main() {
+	get_ID_result="$(get_ID "$1")"
+	rm_csv_file
+	get_notes_info "$get_ID_result"
+}
+
+main "$1"
