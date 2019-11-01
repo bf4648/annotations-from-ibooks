@@ -7,7 +7,7 @@
 # https://askubuntu.com/questions/408775/add-seconds-to-a-given-date-in-bash
 set -euo pipefail
 
-BOOK_TITLE="The Books Title"
+BOOK_TITLE="Psychology A Complete Introduction"
 
 # bins
 SQLITE3=/usr/bin/sqlite3
@@ -40,11 +40,11 @@ done < <("$SQLITE3" "$BOOKS_DATABASE_FILE" "$BOOKS_QUERY")
 NOTES_QUERY="SELECT ZANNOTATIONREPRESENTATIVETEXT as BroaderText, ZANNOTATIONSELECTEDTEXT as SelectedText, ZANNOTATIONNOTE as Note, ZFUTUREPROOFING5 as Chapter, ZANNOTATIONCREATIONDATE as Created, ZANNOTATIONMODIFICATIONDATE as Modified FROM ZAEANNOTATION WHERE ZANNOTATIONSELECTEDTEXT IS NOT NULL AND ZANNOTATIONASSETID = '"$ZASSETID"' ORDER BY ZANNOTATIONASSETID ASC,Created ASC"
 
 # The iBooks DB stores the ZANNOTATIONCREATIONDATE and ZANNOTATIONMODIFICATIONDATE values in ISO-8601 standard as seconds from the date of 2000-01-01 00:00:00 +0000.
-# For example, 
-# if I had a value of 588916720.882715 in the ZANNOTATIONCREATIONDATE field I could do the following to get the actual date that 
+# For example,
+# if I had a value of 588916720.882715 in the ZANNOTATIONCREATIONDATE field I could do the following to get the actual date that
 # this value represents in human readable form:
 # /usr/local/bin/gdate '+%m/%d/%Y %I:%M %p' --date="2000-01-01 00:00:00 +0000 + 588916720.882715 seconds"
-# ; is the delimiter 
+# ; is the delimiter
 rm -rfv "$CSV_FILE"
 while read -r line; do
 	# =~ is a regex expression
