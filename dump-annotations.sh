@@ -79,7 +79,6 @@ get_text_by_delimiter() {
 }
 
 get_notes_info() {
-	# notes
 	local notes_query="$1"
 	local notes_database_file="$2"
 	local title="$3"
@@ -91,7 +90,8 @@ get_notes_info() {
 		local note_text=$(get_text_by_delimiter "$line" 3)
 
 		# Dates
-		local chapter=$(get_text_by_delimiter "$line" 4)
+		local unsanitized_chapter=$(get_text_by_delimiter "$line" 4)
+		local chapter=$(get_sanitize "$unsanitized_chapter")
 		local created=$(get_text_by_delimiter "$line" 5)
 		local modified=$(get_text_by_delimiter "$line" 6)
 		# echo -e "Front: $selectedText\tBack: back\tTag: $chapter\tCreated: $created\tModified: $modified" >> "$CSV_FILE"
@@ -100,13 +100,21 @@ get_notes_info() {
 	echo "Done! Output file is @ $CSV_FILE"
 }
 
+get_sanitize() {
+	local passedInString="$1"
+	local result=`echo $passedInString | tr -s '[:blank:]' '-' | tr '[:upper:]' '[:lower:]'`
+	echo "$result"
+}
+
 main() {
 	title="$1"
 	id="$(get_ID "$title")"
 	rm_csv_file
 	notes_query=$(get_notes_query "$id")
 	notes_db_file=$(get_notes_db_file)
-	get_notes_info "$notes_query" "$notes_db_file" "$title"
+	unsanitized_title=`echo $title | cut -f 1 -d ':'`
+	sanitized_title=$(get_sanitize "$unsanitized_title")
+	get_notes_info "$notes_query" "$notes_db_file" "$sanitized_title"
 }
 
 main "$1"
