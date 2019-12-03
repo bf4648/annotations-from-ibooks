@@ -80,9 +80,8 @@ get_text_by_delimiter() {
 
 get_notes_info() {
 	# notes
-	local zassetid="$1"
-	local notes_query="$2"
-	local notes_database_file="$3"
+	local notes_query="$1"
+	local notes_database_file="$2"
 	# ; is the delimiter
 	"SQLITE3" "$notes_database_file" "$notes_query" | while read line; do
 		# echo "Line: $line"
@@ -103,9 +102,9 @@ get_notes_info() {
 main() {
 	id="$(get_ID "$1")"
 	rm_csv_file
-	otes_query=$(get_notes_query "$id")
+	notes_query=$(get_notes_query "$id")
 	notes_db_file=$(get_notes_db_file)
-	get_notes_info "$id" "$notes_query" "$notes_db_file"
+	get_notes_info "$notes_query" "$notes_db_file"
 }
 
 main "$1"
