@@ -29,8 +29,8 @@ get_ID() {
 	local books_query="SELECT ZASSETID, ZTITLE AS Title, ZAUTHOR AS Author FROM ZBKLIBRARYASSET WHERE ZTITLE IS NOT NULL"
 	"SQLITE3" "$books_database_file" "$books_query" | while read line; do
 		if [[ $line =~ "$book_title" ]]; then
-			get_ID_result=`echo $line | cut -f 1 -d '|'`
-			echo $get_ID_result
+			id_result=`echo $line | cut -f 1 -d '|'`
+			echo "$id_result"
 			# TITLE=`echo $line | cut -f 2 -d '|'`
 			# AUTHOR=`echo $line | cut -f 3 -d '|'`
 		fi
@@ -82,6 +82,7 @@ get_notes_info() {
 	# notes
 	local notes_query="$1"
 	local notes_database_file="$2"
+	local title="$3"
 	# ; is the delimiter
 	"SQLITE3" "$notes_database_file" "$notes_query" | while read line; do
 		# echo "Line: $line"
@@ -93,18 +94,19 @@ get_notes_info() {
 		local chapter=$(get_text_by_delimiter "$line" 4)
 		local created=$(get_text_by_delimiter "$line" 5)
 		local modified=$(get_text_by_delimiter "$line" 6)
-		# echo "$selectedText|Chapter: $chapter|Created: $created|Modified: $modified|back"
-		echo "$selectedText|Chapter: $chapter|Created: $created|Modified: $modified|back" >> "$CSV_FILE"
+		# echo -e "Front: $selectedText\tBack: back\tTag: $chapter\tCreated: $created\tModified: $modified" >> "$CSV_FILE"
+		echo -e "$selectedText\tback\t"$title":$chapter" >> "$CSV_FILE"
 	done
 	echo "Done! Output file is @ $CSV_FILE"
 }
 
 main() {
-	id="$(get_ID "$1")"
+	title="$1"
+	id="$(get_ID "$title")"
 	rm_csv_file
 	notes_query=$(get_notes_query "$id")
 	notes_db_file=$(get_notes_db_file)
-	get_notes_info "$notes_query" "$notes_db_file"
+	get_notes_info "$notes_query" "$notes_db_file" "$title"
 }
 
 main "$1"
