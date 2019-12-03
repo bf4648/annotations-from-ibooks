@@ -83,7 +83,7 @@ get_notes_info() {
 	local notes_query="$1"
 	local notes_database_file="$2"
 	local title="$3"
-	# ; is the delimiter
+	# \t is the delimiter
 	"SQLITE3" "$notes_database_file" "$notes_query" | while read line; do
 		# echo "Line: $line"
 		local border_text=$(get_text_by_delimiter "$line" 1)
@@ -95,7 +95,7 @@ get_notes_info() {
 		local created=$(get_text_by_delimiter "$line" 5)
 		local modified=$(get_text_by_delimiter "$line" 6)
 		# echo -e "Front: $selectedText\tBack: back\tTag: $chapter\tCreated: $created\tModified: $modified" >> "$CSV_FILE"
-		echo -e "$selectedText\tback\t"$title":$chapter" >> "$CSV_FILE"
+		echo -e "$selectedText\tback\t"$title",$chapter" >> "$CSV_FILE"
 	done
 	echo "Done! Output file is @ $CSV_FILE"
 }
