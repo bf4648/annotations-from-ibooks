@@ -8,6 +8,8 @@
 
 #exit on error
 set -e
+set -u
+set -o pipefail
 
 # bins
 SQLITE3=/usr/bin/sqlite3
@@ -39,11 +41,16 @@ rm_csv_file() {
 	rm -vfr "$CSV_FILE"
 }
 
+get_notes_query() {
+	local notes_query="SELECT ZANNOTATIONREPRESENTATIVETEXT as BroaderText, ZANNOTATIONSELECTEDTEXT as SelectedText, ZANNOTATIONNOTE as Note, ZFUTUREPROOFING5 as Chapter, ZANNOTATIONCREATIONDATE as Created, ZANNOTATIONMODIFICATIONDATE as Modified FROM ZAEANNOTATION WHERE ZANNOTATIONSELECTEDTEXT IS NOT NULL AND ZANNOTATIONASSETID = '"$zassetid"' ORDER BY ZANNOTATIONASSETID ASC,Created ASC"
+	echo "$notes_query"
+}
+
 get_notes_info() {
 	# notes
 	local zassetid="$1"
-	local notes_database_file=`find "$NOTES_DATABASE_DIRECTORY" -iname "*.sqlite"`
-	local notes_query="SELECT ZANNOTATIONREPRESENTATIVETEXT as BroaderText, ZANNOTATIONSELECTEDTEXT as SelectedText, ZANNOTATIONNOTE as Note, ZFUTUREPROOFING5 as Chapter, ZANNOTATIONCREATIONDATE as Created, ZANNOTATIONMODIFICATIONDATE as Modified FROM ZAEANNOTATION WHERE ZANNOTATIONSELECTEDTEXT IS NOT NULL AND ZANNOTATIONASSETID = '"$zassetid"' ORDER BY ZANNOTATIONASSETID ASC,Created ASC"
+	local notes_query="$2"
+	# local notes_database_file=`find "$NOTES_DATABASE_DIRECTORY" -iname "*.sqlite"`
 	# The iBooks DB stores the ZANNOTATIONCREATIONDATE and ZANNOTATIONMODIFICATIONDATE values in ISO-8601 standard as seconds from the date of 2000-01-01 00:00:00 +0000.
 	# For example,
 	# if I had a value of 588916720.882715 in the ZANNOTATIONCREATIONDATE field I could do the following to get the actual date that
@@ -116,9 +123,10 @@ get_notes_info() {
 }
 
 main() {
-	get_ID_result="$(get_ID "$1")"
+	id="$(get_ID "$1")"
 	rm_csv_file
-	get_notes_info "$get_ID_result"
+	notes_query=$(get_notes_query)
+	get_notes_info "$id" "$notes_query"
 }
 
 main "$1"

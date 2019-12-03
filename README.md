@@ -2,7 +2,15 @@
 
 This little script just dumps the ibooks annotations using the title of the book into a semicolon delimated file in ~/Downloads/output.csv.  You can then import this file into Anki since Anki will import csv files.
 
-## Get the title
+## Install the Dependencies
+
+If you are on a mac you will need to install sqlite3 and gdate (which is included in the coreutils package)
+
+```shell
+brew install coreutils sqlite3
+```
+
+## Get the Title of the Book
 
 Open using sqlitedb browser
 
@@ -20,12 +28,4 @@ SELECT ZASSETID, ZTITLE AS Title, ZAUTHOR AS Author FROM ZBKLIBRARYASSET WHERE Z
 
 ```shell
 ./dump-annotations.sh "Book Title"
-```
-
-# Dependencies
-
-If you are on a mac you will need to install sqlite3 and gdate (which is included in the coreutils package)
-
-```shell
-brew install coreutils sqlite3
 ```
