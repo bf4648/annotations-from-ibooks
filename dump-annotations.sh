@@ -38,7 +38,7 @@ get_ID() {
 }
 
 rm_csv_file() {
-	rm -vfr "$CSV_FILE"
+	rm -rfv "$CSV_FILE"
 }
 
 get_notes_query() {
@@ -68,7 +68,8 @@ get_text_by_delimiter() {
 			# if I had a value of 588916720.882715 in the ZANNOTATIONCREATIONDATE field I could do the following to get the actual date that
 			# this value represents in human readable form:
 			# /usr/local/bin/gdate '+%m/%d/%Y %I:%M %p' --date="2000-01-01 00:00:00 +0000 + 588916720.882715 seconds"
-			text=`echo $text | cut -f 5 -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 + 0000 + {} seconds'"`
+			text=`echo $text | cut -f "$delimiter" -d '|' | xargs -I {} sh -c "$GDATE '$GDATE_FORMAT' --date='2000-01-01 00:00:00 + 0000 + {} seconds'"`
+			# echo `date -d "text"`
 		else
 			# echo "text is set to '$text'"
 			text=`echo $line | cut -f "$delimiter" -d '|'`
@@ -86,7 +87,7 @@ get_notes_info() {
 	"SQLITE3" "$notes_database_file" "$notes_query" | while read line; do
 		# echo "Line: $line"
 		local border_text=$(get_text_by_delimiter "$line" 1)
-		local selected_text=$(get_text_by_delimiter "$line" 2)
+		local selectedText=$(get_text_by_delimiter "$line" 2)
 		local note_text=$(get_text_by_delimiter "$line" 3)
 
 		# Dates
