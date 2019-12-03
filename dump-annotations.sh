@@ -94,8 +94,8 @@ get_notes_info() {
 		local chapter=$(get_text_by_delimiter "$line" 4)
 		local created=$(get_text_by_delimiter "$line" 5)
 		local modified=$(get_text_by_delimiter "$line" 6)
-		# echo "$selectedText|Chapter: $chapter|Created: $created|Modified: $modified;back"
-		echo "$selectedText|Chapter: $chapter|Created: $created|Modified: $modified;back" >> "$CSV_FILE"
+		# echo "$selectedText|Chapter: $chapter|Created: $created|Modified: $modified|back"
+		echo "$selectedText|Chapter: $chapter|Created: $created|Modified: $modified|back" >> "$CSV_FILE"
 	done
 	echo "Done! Output file is @ $CSV_FILE"
 }
@@ -103,7 +103,7 @@ get_notes_info() {
 main() {
 	id="$(get_ID "$1")"
 	rm_csv_file
-	notes_query=$(get_notes_query "$id")
+	otes_query=$(get_notes_query "$id")
 	notes_db_file=$(get_notes_db_file)
 	get_notes_info "$id" "$notes_query" "$notes_db_file"
 }
