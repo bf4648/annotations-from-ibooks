@@ -7,7 +7,7 @@ This little script just dumps the ibooks annotations using the title of the book
 If you are on a mac you will need to install sqlite3 and gdate (which is included in the coreutils package)
 
 ```shell
-brew install coreutils sqlite3
+brew install coreutils sqlite3 rename
 ```
 
 ## Get the Title of the Book
